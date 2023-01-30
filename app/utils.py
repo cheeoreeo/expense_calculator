@@ -17,14 +17,19 @@ def define_category(user_id: int, title: str) -> tuple:
 
 def parse_expense(text: str) -> dict:
     expense = text.strip().split()
-    try:
-        result = {
-            'cost': int(expense[0]),
-            'name': expense[1],
-            'comment': ' '.join(expense[2:])
-        }
-    except:
+    if len(expense) < 2:
         return {}
+
+    try:
+        cost = int(expense[0])
+    except ValueError:
+        return {}
+
+    result = {
+        'cost': cost,
+        'name': expense[1],
+        'comment': ' '.join(expense[2:]) if len(expense) > 2 else ''
+    }
     return result
 
 
@@ -52,20 +57,16 @@ def aggregate_expenses(expenses: query) -> dict:
 
 
 def get_last_expenses(expenses: query) -> str:
-    result = ''
-    count = 0
-    for expense in expenses:
-        count += 1
+    expenses_list = []
+    for idx, expense in enumerate(expenses):
         cost, category, name = expense.cost, expense.category.title, expense.name
-        result += f'/del{count}: {cost,name,category}\n'
-    return result
+        expense_str = f'{idx+1}: {cost}, {name}, {category}'
+        expenses_list.append(expense_str)
+    return '\n'.join(expenses_list)
 
 
 def convert_aggregate_expenses(expenses: dict) -> str:
-    result = ''
-    for k, v in expenses.items():
-        result += f'{k}: {v}\n'
-    return result
+    return '\n'.join("{}: {}".format(k, v) for k, v in expenses.items())
 
 
 def parse_income(text: str) -> dict:

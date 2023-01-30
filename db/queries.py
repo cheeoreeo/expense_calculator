@@ -9,7 +9,7 @@ session = get_db()
 
 
 def get_user(user_id: int) -> None:
-    return session.query(User).where(User.id == user_id).first()
+    return session.query(User).filter(User.id == user_id).first()
 
 
 def create_user(user_id: int, first_name: str, username: str) -> None:
@@ -45,12 +45,12 @@ def create_expense(cost: int, name: str, user_id: int, date: datetime, category_
 
 def update_expense(*args, **kwargs) -> None:
     expense = session.query(Expense) \
-        .where(Expense.user_id == kwargs['user_id'],
-               Expense.name == kwargs['name'],
-               Expense.category_id == kwargs['category_id'],
-               extract('month', Expense.date) == kwargs['date'].month,
-               extract('year', Expense.date) == kwargs['date'].year,
-               extract('day', Expense.date) == kwargs['date'].day).order_by('id').first()
+        .filter(Expense.user_id == kwargs['user_id'],
+                Expense.name == kwargs['name'],
+                Expense.category_id == kwargs['category_id'],
+                extract('month', Expense.date) == kwargs['date'].month,
+                extract('year', Expense.date) == kwargs['date'].year,
+                extract('day', Expense.date) == kwargs['date'].day).first()
     expense.cost = kwargs['cost']
     expense.name = kwargs['name']
     expense.comment = kwargs['comment']
@@ -70,29 +70,29 @@ def bulk_create_expenses(objects: list) -> None:
 
 
 def get_category(title: str) -> Category:
-    return session.query(Category).where(Category.title == title).first()
+    return session.query(Category).filter(Category.title == title).first()
 
 
 def delete_user_category(user_id: int, category_id: int) -> None:
-    session.query(UserCategory).where(UserCategory.user_id == user_id, UserCategory.category_id == category_id).delete()
+    session.query(UserCategory).filter(UserCategory.user_id == user_id, UserCategory.category_id == category_id).delete()
     session.commit()
 
 
 def create_category(title: str) -> Category:
     new_category = Category(title=title)
     session.add(new_category)
-    session.flush()
+    session.commit()
     return new_category
 
 
 def get_user_category(user_id: int, category_id: int) -> UserCategory:
     return session.query(UserCategory) \
-        .where(UserCategory.user_id == user_id, UserCategory.category_id == category_id).first()
+        .filter(UserCategory.user_id == user_id, UserCategory.category_id == category_id).first()
 
 
 def get_user_categories(user_id: int) -> query:
     return session.query(UserCategory.costs, UserCategory.status, UserCategory.is_auto, Category.title, Category.id) \
-        .where(Category.id == UserCategory.category_id, UserCategory.user_id == user_id).all()
+        .filter(Category.id == UserCategory.category_id, UserCategory.user_id == user_id).all()
 
 
 def create_user_category(user_id: int, category_id: int, costs: list, status: str, is_auto: bool) -> None:
@@ -104,7 +104,7 @@ def create_user_category(user_id: int, category_id: int, costs: list, status: st
 
 def update_user_category(user_id: int, category_id: int, costs: list, status: str, is_auto: bool) -> None:
     user_category = session.query(UserCategory) \
-        .where(UserCategory.user_id == user_id, UserCategory.category_id == category_id).first()
+        .filter(UserCategory.user_id == user_id, UserCategory.category_id == category_id).first()
     user_category.costs = costs
     user_category.status = status
     user_category.is_auto = is_auto
